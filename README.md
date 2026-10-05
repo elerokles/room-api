@@ -34,3 +34,20 @@ Capacity must be between 1 and 20. The rule lives in `RoomService`.
 ## AI use
 
 (Write one line here if you used AI tools.)
+I never used github, so im having help with pushing and commiting things.
+
+## Database
+
+Two tables, created by `schema.sql` and filled by `data.sql` at startup:
+
+| Table       | Columns                                               |
+|-------------|-------------------------------------------------------|
+| room        | id (PK), name, capacity (1-20)                        |
+| reservation | id (PK), room_id (FK -> room.id), reserved_by, start_time, end_time |
+
+One room has many reservations (1-to-many via `reservation.room_id`).
+
+### H2 console
+- URL: http://localhost:8080/h2-console
+- JDBC URL: `jdbc:h2:mem:roomdb`
+- User name: `sa` (empty password)
