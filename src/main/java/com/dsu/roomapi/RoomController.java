@@ -3,6 +3,7 @@ package com.dsu.roomapi;
 import java.net.URI;
 import java.util.List;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -42,7 +43,7 @@ public class RoomController {
         try {
             Room room = roomService.create(request.name(), request.capacity());
             return ResponseEntity
-                    .created(URI.create("/api/rooms/" + room.id()))
+                    .created(URI.create("/api/rooms/" + room.getId()))
                     .body(room);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
@@ -63,8 +64,12 @@ public class RoomController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
-        return roomService.delete(id)
-                ? ResponseEntity.noContent().build()
-                : ResponseEntity.notFound().build();
+        try {
+            return roomService.delete(id)
+                    ? ResponseEntity.noContent().build()
+                    : ResponseEntity.notFound().build();
+        } catch (DataIntegrityViolationException e) {
+            return ResponseEntity.status(409).build();
+        }
     }
 }

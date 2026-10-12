@@ -56,3 +56,6 @@ Content-Type: application/json
 
 ### 14. Stats: another controller sees the same data (expect {"rooms": 3})
 GET http://localhost:8080/api/stats
+
+### 15. Delete a room that has reservations (expect 409)
+DELETE http://localhost:8080/api/rooms/1

@@ -1,17 +1,15 @@
 package com.dsu.roomapi;
 
 import java.util.List;
-import java.util.Optional;
 
-public interface RoomRepository {
+import org.springframework.data.jpa.repository.JpaRepository;
 
-    List<Room> findAll();
+public interface RoomRepository extends JpaRepository<Room, Long> {
 
-    Optional<Room> findById(Long id);
+    List<Room> findByCapacityGreaterThanEqual(int minCapacity);
 
-    /** id == null: store a new room with a fresh id. Otherwise: replace the room with that id. */
-    Room save(Room room);
+    List<Room> findByNameContainingIgnoreCase(String keyword);
 
-    /** Returns true if a room was removed. */
-    boolean deleteById(Long id);
+    List<Room> findByCapacityGreaterThanEqualAndNameContainingIgnoreCase(
+            int minCapacity, String keyword);
 }

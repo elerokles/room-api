@@ -1,8 +1,21 @@
-INSERT INTO room (name, capacity) VALUES ('Room A', 6);
-INSERT INTO room (name, capacity) VALUES ('Room B', 12);
+DROP TABLE IF EXISTS reservation;
+DROP TABLE IF EXISTS room;
 
-INSERT INTO reservation (room_id, reserved_by, start_time, end_time)
-VALUES (1, 'Rokas', '2026-10-01 10:00:00', '2026-10-01 11:00:00');
+CREATE TABLE room (
+                      id       BIGINT AUTO_INCREMENT PRIMARY KEY,
+                      name     VARCHAR(100) NOT NULL,
+                      capacity INT NOT NULL,
+                      CONSTRAINT chk_room_capacity CHECK (capacity BETWEEN 1 AND 20)
+);
+
+CREATE TABLE reservation (
+                             id          BIGINT AUTO_INCREMENT PRIMARY KEY,
+                             room_id     BIGINT NOT NULL,
+                             reserved_by VARCHAR(50) NOT NULL,
+                             start_time  DATETIME NOT NULL,
+                             end_time    DATETIME NOT NULL,
+                             CONSTRAINT fk_reservation_room FOREIGN KEY (room_id) REFERENCES room(id)
+);
 
 INSERT INTO room (name, capacity) VALUES ('Seminar A', 8);
 INSERT INTO room (name, capacity) VALUES ('Study Pod', 4);
