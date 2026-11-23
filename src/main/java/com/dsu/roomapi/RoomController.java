@@ -3,7 +3,7 @@ package com.dsu.roomapi;
 import java.net.URI;
 import java.util.List;
 
-import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,8 +13,13 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
+
+// Week 9: each method describes only the success. Failures leave as exceptions
+// and ApiExceptionHandler answers them.
 @RestController
 @RequestMapping("/api/rooms")
 public class RoomController {
@@ -26,50 +31,36 @@ public class RoomController {
     }
 
     @GetMapping
-    public List<Room> list(@RequestParam(required = false) Integer minCapacity,
-                           @RequestParam(defaultValue = "") String keyword) {
-        return roomService.search(minCapacity, keyword);
+    public List<RoomResponse> list(@RequestParam(required = false) Integer minCapacity,
+                                   @RequestParam(defaultValue = "") String keyword) {
+        return roomService.search(minCapacity, keyword).stream()
+                .map(RoomResponse::from)
+                .toList();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Room> findOne(@PathVariable Long id) {
-        return roomService.findById(id)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    public RoomResponse findOne(@PathVariable Long id) {
+        return RoomResponse.from(roomService.get(id));
     }
 
+    // POST keeps ResponseEntity: it needs 201 and a Location header.
     @PostMapping
-    public ResponseEntity<Room> create(@RequestBody RoomCreateRequest request) {
-        try {
-            Room room = roomService.create(request.name(), request.capacity());
-            return ResponseEntity
-                    .created(URI.create("/api/rooms/" + room.getId()))
-                    .body(room);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build();
-        }
+    public ResponseEntity<RoomResponse> create(@Valid @RequestBody RoomCreateRequest request) {
+        Room room = roomService.create(request.name(), request.capacity());
+        return ResponseEntity
+                .created(URI.create("/api/rooms/" + room.getId()))
+                .body(RoomResponse.from(room));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Room> replace(@PathVariable Long id,
-                                        @RequestBody RoomCreateRequest request) {
-        try {
-            return roomService.replace(id, request.name(), request.capacity())
-                    .map(ResponseEntity::ok)
-                    .orElseGet(() -> ResponseEntity.notFound().build());
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build();
-        }
+    public RoomResponse replace(@PathVariable Long id,
+                                @Valid @RequestBody RoomCreateRequest request) {
+        return RoomResponse.from(roomService.update(id, request.name(), request.capacity()));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        try {
-            return roomService.delete(id)
-                    ? ResponseEntity.noContent().build()
-                    : ResponseEntity.notFound().build();
-        } catch (DataIntegrityViolationException e) {
-            return ResponseEntity.status(409).build();
-        }
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable Long id) {
+        roomService.delete(id);
     }
 }
