@@ -17,8 +17,13 @@ public class Room {
 
     protected Room() { } // for Hibernate
 
-    public Room(Long id, String name, int capacity) {
-        this.id = id;
+    public Room(String name, int capacity) {
+        this.name = name;
+        this.capacity = capacity;
+    }
+
+    // Week 9: one named change. On a managed entity, dirty checking writes the UPDATE at commit.
+    public void update(String name, int capacity) {
         this.name = name;
         this.capacity = capacity;
     }
