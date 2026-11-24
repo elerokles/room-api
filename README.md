@@ -264,6 +264,35 @@ Each request in `api.http` has a comment with the answer it should give. The Wee
 Requests 49 and 52 also list a `FACTOR_PASSWORD` or `FACTOR_BEARER` authority: Spring Security 7 adds one
 for the way you logged in.
 
+## Tests
+
+Week 12 (Assignment 8): 20 tests in `src/test/java/com/dsu/roomapi`.
+
+| Class | Kind | What it checks |
+|-------|------|----------------|
+| `ReservationServiceTest` | Service test: JUnit + Mockito, no Spring, no database | 400 end before start, 404 missing room, 409 overlap, 403 rule C; Lab H1: owner saved from the login, owner may delete, admin may delete, admin may not reschedule (Lab G); plus reschedule onto a busy time (409) |
+| `ApiFailureTest` | API test: `@SpringBootTest` + MockMvc + MySQL, each test rolled back (`@Transactional`) | Step 8: 401 no login, 403 rule D, 201 admin creates a room. Lab H2, the seven failures of R7: rule A 409, rule B 400, rule C 403, rule D 403, no login 401, room with reservations 409, missing field 400. Plus wrong password 401 and reservation 99 404. Every failure checks the status and the `message` |
+| `RoomApiApplicationTests` | Spring starts with the database | `contextLoads` |
+
+**MySQL with `reset.sql` is needed.** The API tests run the whole application against `roomdb`, and they
+expect the `reset.sql` data (mina owns reservations 1 and 3; passwords mina1234, omar1234, admin1234).
+
+1. Start MySQL, then in Workbench: `USE roomdb;` and run `reset.sql`.
+2. Run the tests:
+
+```
+./gradlew test        (macOS / Linux)
+gradlew.bat test      (Windows)
+```
+
+Or in IntelliJ: the green arrow next to a test class, or right-click `src/test/java` → Run 'All Tests'.
+The report is in `build/reports/tests/test/index.html`. If MySQL is on another port than 3306, set
+`SPRING_DATASOURCE_URL` first, for example `jdbc:mysql://localhost:3305/roomdb`.
+
+Screenshot of the green run (20 tests, 0 failures): [`docs/tests-green.png`](docs/tests-green.png)
+
+![All tests passed](docs/tests-green.png)
+
 ## AI use
 
 I used Claude to learn how to commit and push with GitHub.
